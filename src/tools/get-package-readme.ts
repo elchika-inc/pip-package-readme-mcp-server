@@ -38,12 +38,42 @@ export async function getPackageReadme(params: GetPackageReadmeParams): Promise<
 
   try {
     // Get package info directly from PyPI
-    logger.debug(`Fetching package info: ${package_name}@${version}`);
-    const packageInfo = version === 'latest' 
-      ? await pypiClient.getPackageInfo(package_name)
-      : await pypiClient.getVersionInfo(package_name, version);
+    let packageInfo;
     
-    logger.debug(`Package found: ${package_name}@${packageInfo.info.version}`);
+    try {
+      logger.debug(`Getting package info for: ${package_name}@${version}`);
+      packageInfo = version === 'latest' 
+        ? await pypiClient.getPackageInfo(package_name)
+        : await pypiClient.getVersionInfo(package_name, version);
+    } catch (error) {
+      // If package not found, return a response indicating non-existence
+      logger.debug(`Package not found: ${package_name}`);
+      return {
+        package_name,
+        version: version || 'latest',
+        description: 'Package not found',
+        readme_content: '',
+        usage_examples: [],
+        installation: {
+          pip: `pip install ${package_name}`,
+          conda: `conda install ${package_name}`,
+          pipx: `pipx install ${package_name}`,
+        },
+        basic_info: {
+          name: package_name,
+          version: version || 'latest',
+          description: 'Package not found',
+          author: 'Unknown',
+          maintainer: undefined,
+          keywords: [],
+          classifiers: [],
+          requires_python: undefined,
+        },
+        exists: false,
+      };
+    }
+    
+    logger.debug(`Package info retrieved for: ${package_name}@${packageInfo.info.version}`);
 
     const actualVersion = packageInfo.info.version;
 
@@ -146,6 +176,7 @@ export async function getPackageReadme(params: GetPackageReadmeParams): Promise<
       installation: installation,
       basic_info: basicInfo,
       repository: repository || undefined,
+      exists: true,
     };
 
     // Cache the response

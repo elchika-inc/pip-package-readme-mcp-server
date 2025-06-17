@@ -95,6 +95,7 @@ export interface PackageReadmeResponse {
   installation: InstallationInfo;
   basic_info: PackageBasicInfo;
   repository?: RepositoryInfo | undefined;
+  exists: boolean;
 }
 
 export interface PackageInfoResponse {

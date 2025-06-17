@@ -45,8 +45,8 @@ const TOOL_DEFINITIONS = {
       required: ['package_name'],
     },
   },
-  get_info_from_pip: {
-    name: 'get_info_from_pip',
+  get_package_info_from_pip: {
+    name: 'get_package_info_from_pip',
     description: 'Get package basic information and dependencies from PyPI registry',
     inputSchema: {
       type: 'object',
@@ -161,7 +161,7 @@ export class PackageReadmeMcpServer {
           case 'get_readme_from_pip':
             return await this.handleGetPackageReadme(this.validateGetPackageReadmeParams(args));
           
-          case 'get_info_from_pip':
+          case 'get_package_info_from_pip':
             return await this.handleGetPackageInfo(this.validateGetPackageInfoParams(args));
           
           case 'search_packages_from_pip':
