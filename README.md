@@ -1,5 +1,11 @@
 # pip-package-readme-mcp-server
 
+[![npm version](https://img.shields.io/npm/v/pip-package-readme-mcp-server)](https://www.npmjs.com/package/pip-package-readme-mcp-server)
+[![npm downloads](https://img.shields.io/npm/dm/pip-package-readme-mcp-server)](https://www.npmjs.com/package/pip-package-readme-mcp-server)
+[![GitHub stars](https://img.shields.io/github/stars/naoto24kawa/package-readme-mcp-servers)](https://github.com/naoto24kawa/package-readme-mcp-servers)
+[![GitHub issues](https://img.shields.io/github/issues/naoto24kawa/package-readme-mcp-servers)](https://github.com/naoto24kawa/package-readme-mcp-servers/issues)
+[![license](https://img.shields.io/npm/l/pip-package-readme-mcp-server)](https://github.com/naoto24kawa/package-readme-mcp-servers/blob/main/LICENSE)
+
 MCP server for fetching Python package README and usage information from PyPI.
 
 ## Features
