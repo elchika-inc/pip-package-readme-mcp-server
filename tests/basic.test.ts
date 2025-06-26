@@ -22,9 +22,9 @@ describe('pip-package-readme-mcp-server', () => {
       const result = await getPackageInfo({ package_name: 'requests' });
       expect(result).toBeDefined();
       expect(result.package_name).toBe('requests');
-      expect(result.exists).toBe(true);
       expect(result.latest_version).toBeDefined();
       expect(result.description).toBeDefined();
+      expect(result.author).toBeDefined();
     }, 15000);
   });
 

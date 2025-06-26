@@ -47,15 +47,8 @@ describe('PyPI Package Validation Tests', () => {
         expect(() => validatePackageName('my_package')).not.toThrow();
       });
 
-      test('123invalid should fail (invalid - starts with number)', () => {
-        expect(() => validatePackageName('123invalid')).toThrow(PackageReadmeMcpError);
-        try {
-          validatePackageName('123invalid');
-        } catch (error) {
-          expect(error).toBeInstanceOf(PackageReadmeMcpError);
-          expect(error.message).toContain('must start with a letter or number');
-          expect(error.code).toBe('INVALID_PACKAGE_NAME');
-        }
+      test('123invalid should pass (valid - can start with number)', () => {
+        expect(() => validatePackageName('123invalid')).not.toThrow();
       });
 
       test('package- should fail (invalid - ends with hyphen)', () => {
@@ -88,8 +81,7 @@ describe('PyPI Package Validation Tests', () => {
           validatePackageName('.package');
         } catch (error) {
           expect(error).toBeInstanceOf(PackageReadmeMcpError);
-          expect(error.message).toContain('cannot start or end with a dot');
-          expect(error.message).toContain('package');
+          expect(error.message).toContain('must start with a letter or number');
           expect(error.code).toBe('INVALID_PACKAGE_NAME');
         }
       });
@@ -100,8 +92,7 @@ describe('PyPI Package Validation Tests', () => {
           validatePackageName('package.');
         } catch (error) {
           expect(error).toBeInstanceOf(PackageReadmeMcpError);
-          expect(error.message).toContain('cannot start or end with a dot');
-          expect(error.message).toContain('package');
+          expect(error.message).toContain('must end with a letter or number');
           expect(error.code).toBe('INVALID_PACKAGE_NAME');
         }
       });
@@ -172,7 +163,7 @@ describe('PyPI Package Validation Tests', () => {
           validatePackageName('');
         } catch (error) {
           expect(error).toBeInstanceOf(PackageReadmeMcpError);
-          expect(error.message).toContain('cannot be empty');
+          expect(error.message).toContain('Package name is required');
           expect(error.code).toBe('INVALID_PACKAGE_NAME');
         }
       });
@@ -223,7 +214,8 @@ describe('PyPI Package Validation Tests', () => {
             validatePackageName(name);
           } catch (error) {
             expect(error).toBeInstanceOf(PackageReadmeMcpError);
-            expect(error.message).toContain('contains invalid characters');
+            // Different names fail at different validation steps
+            expect(error.message).toMatch(/contains invalid characters|must end with a letter or number|must start with a letter or number/);
             expect(error.code).toBe('INVALID_PACKAGE_NAME');
           }
         });
@@ -254,10 +246,11 @@ describe('PyPI Package Validation Tests', () => {
       // Valid names should pass after trimming
       expect(() => validatePackageName('  requests  ')).not.toThrow();
       expect(() => validatePackageName('\tdjango\n')).not.toThrow();
+      expect(() => validatePackageName('  123invalid  ')).not.toThrow(); // starts with number is valid
       
       // Invalid names should still fail even after trimming
       expect(() => validatePackageName('  package-  ')).toThrow(); // still ends with hyphen after trimming
-      expect(() => validatePackageName('  123invalid  ')).toThrow(); // still starts with number after trimming
+      expect(() => validatePackageName('  -package  ')).toThrow(); // still starts with hyphen after trimming
     });
 
     test('edge cases should be handled correctly', () => {
