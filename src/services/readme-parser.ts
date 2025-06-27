@@ -6,81 +6,13 @@ export class ReadmeParser {
    * Extracts usage examples from README content
    */
   extractUsageExamples(readmeContent: string): UsageExample[] {
-    const examples: UsageExample[] = [];
-    
     try {
-      // Split content into lines for processing
-      const lines = readmeContent.split('\n');
-      let currentSection = '';
-      let inCodeBlock = false;
-      let currentCodeBlock = '';
-      let currentLanguage = '';
-      let currentTitle = '';
-      let currentDescription = '';
+      const blockExamples = this.extractBlockExamples(readmeContent);
+      const inlineExamples = this.extractInlineExamples(readmeContent);
       
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const trimmedLine = line.trim();
-        
-        // Detect section headers
-        if (trimmedLine.match(/^#+\s/)) {
-          currentSection = trimmedLine.replace(/^#+\s*/, '').toLowerCase();
-          
-          // Check if this is a usage-related section
-          if (this.isUsageSection(currentSection)) {
-            currentTitle = currentSection;
-            currentDescription = '';
-          }
-        }
-        
-        // Detect code block start/end
-        if (trimmedLine.startsWith('```')) {
-          if (!inCodeBlock) {
-            // Starting a code block
-            inCodeBlock = true;
-            currentCodeBlock = '';
-            currentLanguage = this.extractLanguage(trimmedLine);
-            
-            // Use section title if we don't have a specific title
-            if (!currentTitle && currentSection) {
-              currentTitle = this.formatTitle(currentSection);
-            }
-          } else {
-            // Ending a code block
-            inCodeBlock = false;
-            
-            // Only add if it's likely a usage example
-            if (this.isLikelyUsageExample(currentCodeBlock, currentLanguage, currentTitle)) {
-              examples.push({
-                title: currentTitle || 'Code Example',
-                description: currentDescription || undefined,
-                code: currentCodeBlock.trim(),
-                language: currentLanguage || 'python',
-              });
-            }
-            
-            // Reset for next code block
-            currentCodeBlock = '';
-            currentTitle = '';
-            currentDescription = '';
-          }
-        } else if (inCodeBlock) {
-          // Inside a code block
-          currentCodeBlock += line + '\n';
-        } else if (this.isUsageSection(currentSection) && trimmedLine && !trimmedLine.startsWith('#')) {
-          // Collect description text in usage sections
-          if (currentDescription) {
-            currentDescription += ' ';
-          }
-          currentDescription += trimmedLine;
-        }
-      }
-      
-      // Also look for inline code examples
-      examples.push(...this.extractInlineExamples(readmeContent));
-      
-      // Deduplicate and sort by relevance
-      const uniqueExamples = this.deduplicateExamples(examples);
+      // Combine and process examples
+      const allExamples = [...blockExamples, ...inlineExamples];
+      const uniqueExamples = this.deduplicateExamples(allExamples);
       const sortedExamples = this.sortExamplesByRelevance(uniqueExamples);
       
       logger.debug(`Extracted ${sortedExamples.length} usage examples from README`);
@@ -90,6 +22,81 @@ export class ReadmeParser {
       logger.error('Failed to extract usage examples from README', { error });
       return [];
     }
+  }
+
+  /**
+   * Extracts code block examples from README content
+   */
+  private extractBlockExamples(readmeContent: string): UsageExample[] {
+    const examples: UsageExample[] = [];
+    const lines = readmeContent.split('\n');
+    
+    let currentSection = '';
+    let inCodeBlock = false;
+    let currentCodeBlock = '';
+    let currentLanguage = '';
+    let currentTitle = '';
+    let currentDescription = '';
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const trimmedLine = line.trim();
+      
+      // Detect section headers
+      if (trimmedLine.match(/^#+\s/)) {
+        currentSection = trimmedLine.replace(/^#+\s*/, '').toLowerCase();
+        
+        // Check if this is a usage-related section
+        if (this.isUsageSection(currentSection)) {
+          currentTitle = currentSection;
+          currentDescription = '';
+        }
+      }
+      
+      // Detect code block start/end
+      if (trimmedLine.startsWith('```')) {
+        if (!inCodeBlock) {
+          // Starting a code block
+          inCodeBlock = true;
+          currentCodeBlock = '';
+          currentLanguage = this.extractLanguage(trimmedLine);
+          
+          // Use section title if we don't have a specific title
+          if (!currentTitle && currentSection) {
+            currentTitle = this.formatTitle(currentSection);
+          }
+        } else {
+          // Ending a code block
+          inCodeBlock = false;
+          
+          // Only add if it's likely a usage example
+          if (this.isLikelyUsageExample(currentCodeBlock, currentLanguage, currentTitle)) {
+            examples.push({
+              title: currentTitle || 'Code Example',
+              description: currentDescription || undefined,
+              code: currentCodeBlock.trim(),
+              language: currentLanguage || 'python',
+            });
+          }
+          
+          // Reset for next code block
+          currentCodeBlock = '';
+          currentTitle = '';
+          currentDescription = '';
+        }
+      } else if (inCodeBlock) {
+        // Inside a code block
+        currentCodeBlock += line + '\n';
+      } else if (this.isUsageSection(currentSection) && trimmedLine && !trimmedLine.startsWith('#')) {
+        // Collect description text in usage sections
+        if (currentDescription) {
+          currentDescription += ' ';
+        }
+        currentDescription += trimmedLine;
+      }
+    }
+    
+    return examples;
   }
 
   private isUsageSection(sectionName: string): boolean {
