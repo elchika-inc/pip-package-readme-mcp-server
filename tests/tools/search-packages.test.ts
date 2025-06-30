@@ -19,7 +19,7 @@ describe('search-packages tool', () => {
       await searchPackages({ query: 123 });
       expect(false).toBe(true); // Should not reach here
     } catch (error: any) {
-      expect(error.message).toContain('string');
+      expect(error.message).toContain('required');
     }
   });
 

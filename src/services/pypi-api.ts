@@ -1,5 +1,6 @@
 import { logger } from '../utils/logger.js';
 import { handleApiError, handleHttpError, withRetry } from '../utils/error-handler.js';
+import { API_CONFIG, PYPI_CONFIG } from '../config/constants.js';
 import { 
   PyPIPackageInfo, 
   PyPISearchResponse,
@@ -9,12 +10,12 @@ import {
 } from '../types/index.js';
 
 export class PyPIClient {
-  private readonly jsonApiUrl = 'https://pypi.org/pypi';
+  private readonly jsonApiUrl = PYPI_CONFIG.BASE_URL;
   private readonly simpleApiUrl = 'https://pypi.org/simple';
   private readonly timeout: number;
 
   constructor(timeout?: number) {
-    this.timeout = timeout || 30000;
+    this.timeout = timeout || API_CONFIG.DEFAULT_TIMEOUT;
   }
 
   async getPackageInfo(packageName: string): Promise<PyPIPackageInfo> {
@@ -31,7 +32,7 @@ export class PyPIClient {
           signal: controller.signal,
           headers: {
             'Accept': 'application/json',
-            'User-Agent': 'pip-package-readme-mcp/1.0.0',
+            'User-Agent': API_CONFIG.USER_AGENT,
           },
         });
 
@@ -56,7 +57,7 @@ export class PyPIClient {
       } finally {
         clearTimeout(timeoutId);
       }
-    }, 3, 1000, `PyPI getPackageInfo(${packageName})`);
+    }, API_CONFIG.MAX_RETRIES, API_CONFIG.BASE_RETRY_DELAY, `PyPI getPackageInfo(${packageName})`);
   }
 
   async getVersionInfo(packageName: string, version: string): Promise<PyPIPackageInfo> {
@@ -78,7 +79,7 @@ export class PyPIClient {
           signal: controller.signal,
           headers: {
             'Accept': 'application/json',
-            'User-Agent': 'pip-package-readme-mcp/1.0.0',
+            'User-Agent': API_CONFIG.USER_AGENT,
           },
         });
 
@@ -103,7 +104,7 @@ export class PyPIClient {
       } finally {
         clearTimeout(timeoutId);
       }
-    }, 3, 1000, `PyPI getVersionInfo(${packageName}@${version})`);
+    }, API_CONFIG.MAX_RETRIES, API_CONFIG.BASE_RETRY_DELAY, `PyPI getVersionInfo(${packageName}@${version})`);
   }
 
   async searchPackages(
@@ -162,7 +163,7 @@ export class PyPIClient {
           signal: controller.signal,
           headers: {
             'Accept': 'application/vnd.pypi.simple.v1+json',
-            'User-Agent': 'pip-package-readme-mcp/1.0.0',
+            'User-Agent': API_CONFIG.USER_AGENT,
           },
         });
 
@@ -187,7 +188,7 @@ export class PyPIClient {
       } finally {
         clearTimeout(timeoutId);
       }
-    }, 3, 1000, `PyPI getSimpleApiInfo(${packageName})`);
+    }, API_CONFIG.MAX_RETRIES, API_CONFIG.BASE_RETRY_DELAY, `PyPI getSimpleApiInfo(${packageName})`);
   }
 
   // Helper method to get available versions from simple API

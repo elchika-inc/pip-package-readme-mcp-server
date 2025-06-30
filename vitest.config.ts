@@ -6,5 +6,11 @@ export default defineConfig({
     globals: true,
     include: ['tests/**/*.{test,spec}.{js,ts}'],
     exclude: ['node_modules', 'dist'],
+    // Add setupFiles for globals
+    setupFiles: [],
+  },
+  // Define globals for TypeScript
+  define: {
+    global: 'globalThis',
   },
 });

@@ -1,5 +1,6 @@
 import { logger } from '../utils/logger.js';
 import { CacheEntry, CacheOptions } from '../types/index.js';
+import { CACHE_CONFIG } from '../config/constants.js';
 
 export class MemoryCache {
   private cache = new Map<string, CacheEntry<any>>();
@@ -7,8 +8,8 @@ export class MemoryCache {
   private defaultTtl: number;
 
   constructor(options: CacheOptions = {}) {
-    this.maxSize = options.maxSize || 100 * 1024 * 1024; // 100MB
-    this.defaultTtl = options.ttl || 3600000; // 1 hour
+    this.maxSize = Math.max(CACHE_CONFIG.MIN_SIZE, options.maxSize || CACHE_CONFIG.DEFAULT_MAX_SIZE);
+    this.defaultTtl = Math.max(CACHE_CONFIG.MIN_TTL, options.ttl || CACHE_CONFIG.DEFAULT_TTL);
   }
 
   set<T>(key: string, value: T, ttl?: number): void {
@@ -140,8 +141,8 @@ export class MemoryCache {
 
 // Singleton cache instance
 export const cache = new MemoryCache({
-  maxSize: parseInt(process.env.CACHE_MAX_SIZE || '104857600'), // 100MB
-  ttl: parseInt(process.env.CACHE_TTL || '3600000'), // 1 hour
+  maxSize: parseInt(process.env.CACHE_MAX_SIZE || CACHE_CONFIG.DEFAULT_MAX_SIZE.toString()),
+  ttl: parseInt(process.env.CACHE_TTL || CACHE_CONFIG.DEFAULT_TTL.toString()),
 });
 
 // Cache key utilities

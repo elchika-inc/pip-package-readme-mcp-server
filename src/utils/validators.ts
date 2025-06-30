@@ -1,4 +1,5 @@
 import { PackageReadmeMcpError } from '../types/index.js';
+import { VALIDATION_LIMITS } from '../config/constants.js';
 
 /**
  * Validates a Python package name according to PEP 508 naming conventions
@@ -22,7 +23,7 @@ export function validatePackageName(packageName: string): void {
   }
 
   // Check length (PyPI has a practical limit)
-  if (trimmed.length > 214) {
+  if (trimmed.length > VALIDATION_LIMITS.MAX_PACKAGE_NAME_LENGTH) {
     throw new PackageReadmeMcpError(
       `Package name "${trimmed}" is too long (${trimmed.length} characters). PyPI package names must be 214 characters or fewer. Consider using a shorter, more descriptive name.`,
       'INVALID_PACKAGE_NAME'
